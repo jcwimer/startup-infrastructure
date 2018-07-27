@@ -1,0 +1,22 @@
+---
+- name: Initialize swarm on the bootstrap manager
+  command: >
+    docker swarm init --advertise-addr "{{ ansible_eth1.ipv4.address }}"
+  register: docker_swarm_init
+  changed_when: docker_swarm_init.rc == 0
+  ignore_errors: true
+
+- name: Set manager key variable
+  command: docker swarm join-token -q manager
+  register: manager_key
+  changed_when: manager_key.rc == 0
+
+- name: Set worker key variable
+  command: docker swarm join-token -q worker
+  register: worker_key
+  changed_when: worker_key.rc == 0
+
+- name: Set work and manager key facts
+  set_fact:
+    manager_key: "{{ manager_key }}"
+    worker_key: "{{ worker_key }}"

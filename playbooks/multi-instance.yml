@@ -1,0 +1,27 @@
+---
+# This playbook deploys a development machine
+# EXAMPLE:
+# ansible-playbook -i ${project_dir}/hosts ${project_dir}/playbooks/site.yml \
+# -extra-vars "home_pub_key=<pub-key-location-to-curl> standard_user=<user_name> git_user=<git-user> git_email=<git-email>"
+
+- name: Install ansible dependencies
+  hosts: all
+  user: root
+  gather_facts: no
+  serial: 100%
+  tasks:
+    - include: ../roles/ansible-dependencies/tasks/main.yml
+
+- name: Apply common configuration to all nodes
+  hosts: all
+  user: root
+  serial: 100%
+  tasks:
+   - include: ../roles/common/tasks/main.yml
+
+- name: Deploy gitea
+  hosts: gitea
+  user: root
+  serial: 100%
+  tasks:
+    - include: ../roles/gitea/tasks/main.yml

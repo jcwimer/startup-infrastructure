@@ -1,0 +1,48 @@
+---
+- name: Add docker key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Add docker repo
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
+    state: present
+
+- name: Update apt
+  apt: update_cache=yes
+
+- name: Install standard programs
+  apt: name={{ item }}  state=present force=yes
+  with_items:
+    - htop
+    - curl
+    - openssh-server
+    - git
+    - rsync
+    - zip
+    - unzip
+    - fail2ban
+    - ntp
+    - mysql-client
+    - wget
+    - nfs-common
+    - docker-ce={{docker_ce_version_to_install}}
+    - sshpass
+    - ack-grep
+    - dnsutils
+    - nmon
+    - build-essential
+    - tmux
+
+- name: Docker compose version
+  get_url:
+    url: "https://github.com/docker/compose/releases/download/{{docker_compose_version_to_install}}/docker-compose-{{ ansible_system }}-{{ ansible_userspace_architecture }}"
+    dest: /usr/local/bin/docker-compose
+    validate_certs: false
+    mode: 0755
+
+- name: Set timezone to NewYork
+  timezone:
+      name: America/New_York
+  ignore_errors: true

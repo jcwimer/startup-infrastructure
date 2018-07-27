@@ -1,0 +1,101 @@
+---
+# This playbook contains plays that will run on all nodes
+
+- name: Add docker key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Add docker repo
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
+    state: present
+
+- name: Update apt
+  apt: update_cache=yes
+
+#- name: Upgrade APT to the lastest packages
+#  apt: upgrade=dist
+
+- name: Install standard programs
+  apt: name={{ item }}  state=present force=yes
+  with_items:
+    - htop
+    - curl
+    - openssh-server
+    - git
+    - rsync
+    - zip
+    - unzip
+    - fail2ban
+    - ntp
+    - mysql-client
+    - wget
+    - nfs-common
+    - docker-ce={{docker_ce_version_to_install}}
+    - sshpass
+    - ack-grep
+    - dnsutils
+    - nmon
+    - build-essential
+    - tmux
+
+- name: Create standard user
+  user:
+    name: "{{ standard_user }}"
+    groups:
+      - sudo
+      - docker
+    state: present
+    shell: /bin/bash
+
+- name: Add standard_user to docker group
+  user:
+    name: "{{ standard_user }}"
+    groups: docker
+    append: yes
+
+- name: Set authorized key took from url
+  become: yes
+  become_user: "{{ standard_user }}"
+  authorized_key:
+    user: "{{ standard_user }}"
+    state: present
+    key: "{{ home_pub_key }}"
+
+- name: Docker compose version
+  get_url:
+    url: "https://github.com/docker/compose/releases/download/{{docker_compose_version_to_install}}/docker-compose-{{ ansible_system }}-{{ ansible_userspace_architecture }}"
+    dest: /usr/local/bin/docker-compose
+    validate_certs: false
+    mode: 755
+    group: docker
+
+- name: Set timezone to NewYork
+  timezone:
+      name: "{{ chosen_timezone }}"
+  ignore_errors: true
+
+- name: Replace sudoers file
+  template: src=../roles/common/templates/sudoers.j2 dest=/etc/sudoers
+
+- name: Create /etc/docker
+  file:
+    path: /etc/docker
+    group: root
+    owner: root
+    mode: 700
+    state: directory
+
+- name: Replace docker daemon file
+  template: src=../roles/common/templates/docker-daemon.json.j2 dest=/etc/docker/daemon.json
+  register: dockerdaemon
+
+- name: Restart docker if daemon changes
+  service:
+    name: docker
+    state: restarted
+  when: dockerdaemon.changed
+
+- name: Creates directory
+  file: path=/data state=directory
