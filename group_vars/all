@@ -5,7 +5,7 @@ docker_compose_version_to_install: 1.18.0
 docker_ce_version_to_install: 17.09.1~ce-0~ubuntu
 nvm_version: v0.33.5
 node_version: 8.4.0
-rcontent.com/jcwimer/ubuntu-template/master/post/id_rsa.pub
+default_pub_key: https://raw.githubusercontent.com/jcwimer/ubuntu-template/master/post/id_rsa.pub
 standard_user: cody
 git_user: "Jacob Cody Wimer"
 git_email: "jacob.wimer@gmail.com"

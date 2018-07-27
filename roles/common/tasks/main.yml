@@ -61,7 +61,7 @@
   authorized_key:
     user: "{{ standard_user }}"
     state: present
-    key: "{{ home_pub_key }}"
+    key: "{{ default_pub_key }}"
 
 - name: Docker compose version
   get_url:
