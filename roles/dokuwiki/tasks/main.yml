@@ -1,0 +1,6 @@
+---
+- name: Replace sudoers file
+  template: src=../roles/dokuwiki/templates/docker-compose.yml.j2 dest=/data/dokuwiki.yml
+
+- name: Run docker-compose
+  shell: cd /data && docker-compose -f dokuwiki.yml up -d
