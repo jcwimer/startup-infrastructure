@@ -1,12 +1,37 @@
 ---
 # Variables listed here are applicable to all host groups
 
+# Software versions
 docker_compose_version_to_install: 1.18.0
 docker_ce_version_to_install: 17.09.1~ce-0~ubuntu
-nvm_version: v0.33.5
-node_version: 8.4.0
+
+# User stuff
 default_pub_key: https://raw.githubusercontent.com/jcwimer/ubuntu-template/master/post/id_rsa.pub
 standard_user: cody
 git_user: "Jacob Cody Wimer"
 git_email: "jacob.wimer@gmail.com"
 chosen_timezone: "America/New_York"
+
+# Persistent storage if you are doing a single machine deploy, local is an option. If you are doing multi instance deploy, choose one of the following:
+# nfs
+# digitalocean
+# gcp
+# aws
+# openstack
+# ceph
+# then fill out the variables associated with your choice below
+storage_type: "local"
+
+# nfs variables: these need defined if using nfs storage
+#nfs_address: 0.0.0.0
+#nfs_root_path: /some/filepath/on/nfs
+
+# digitalocean variables: these need defined if using digitalocean storage
+
+# gcp variables: these need defined if using gcp storage
+
+# aws variables: these need defined if using aws storage
+
+# openstack variables: these need defined if using openstack storage
+
+# ceph variables: these need defined if using ceph storage
