@@ -1,0 +1,6 @@
+---
+- name: Place the compose file
+  template: src=../roles/startup-infrastructure/templates/docker-compose.yml.j2 dest=/data/startup-infrastructure.yml
+
+- name: Run stack deploy
+  shell: cd /data && docker stack deploy -c startup-infrastructure.yml startup-infrastructure

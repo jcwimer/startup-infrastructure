@@ -1,0 +1,10 @@
+# Node where config files get copied to and docker swarm gets initiated
+# replace localhost with the ip of your bootstrap node
+[bootstrap]
+localhost
+
+# nodes that will be swarm managers (note these will not host services)
+[non-bootstrap-managers]
+
+# nodes that will be swarm workers (note these will need to have more resources than managers)
+[workers]

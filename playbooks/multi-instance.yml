@@ -19,16 +19,9 @@
   tasks:
    - include: ../roles/common/tasks/main.yml
 
-- name: Deploy gitea
-  hosts: gitea
+- name: Deploy startup-infrastructure swarm stack
+  hosts: bootstrap
   user: root
   serial: 100%
   tasks:
-    - include: ../roles/gitea/tasks/main.yml
-
-- name: Deploy dokuwiki
-  hosts: dokuwiki
-  user: root
-  serial: 100%
-  tasks:
-    - include: ../roles/dokuwiki/tasks/main.yml
+    - include: ../roles/startup-infrastructure/tasks/main.yml

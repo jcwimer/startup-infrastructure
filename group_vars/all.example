@@ -1,18 +1,23 @@
 ---
 # Variables listed here are applicable to all host groups
 
-# Software versions
+### Software versions
 docker_compose_version_to_install: 1.18.0
 docker_ce_version_to_install: 17.09.1~ce-0~ubuntu
 
-# User stuff
+### User stuff
 default_pub_key: https://raw.githubusercontent.com/jcwimer/ubuntu-template/master/post/id_rsa.pub
 standard_user: cody
 git_user: "Jacob Cody Wimer"
 git_email: "jacob.wimer@gmail.com"
 chosen_timezone: "America/New_York"
+# root domain for all services. You should have an A record for *.root_domain. For example, if your domain is test.com you should have an A record for *.test.com pointing to your node.
+# this will allow automatic dns for for things like dokuwiki.test.com and portainer.test.com
+root_domain: test.com
 
-# Persistent storage if you are doing a single machine deploy, local is an option. If you are doing multi instance deploy, choose one of the following:
+
+
+### Persistent storage if you are doing a single machine deploy, local is an option. If you are doing multi instance deploy, choose one of the following:
 # nfs
 # digitalocean
 # gcp
