@@ -1,0 +1,64 @@
+---
+- name: Initialize the swarm
+  hosts: bootstrap
+  user: root
+  gather_facts: true
+  serial: 100%
+  tasks:
+    - name: Print ansible interfaces
+      debug:
+        msg: "{{ ansible_interfaces }}"
+
+    # - name: Get ip of swarm_network_interface by parsing all interfaces
+    #   set_fact:
+    #     swarm_init_ip={{hostvars[inventory_hostname]['ansible_item']['ipv4']['address']}}
+    #   when: (item == swarm_network_interface)
+    #   with_items:
+    #     - "{{ ansible_interfaces }}"
+    - name: Set interface var name fact
+      set_fact:
+        swarm_interface_var_name: "ansible_{{ swarm_network_interface }}"
+
+    - name: Set swarm advertise ip address
+      set_fact: 
+        swarm_init_ip: "{{ hostvars[inventory_hostname][swarm_interface_var_name]['ipv4']['address'] }}"
+
+    - name: Print swarm init ip address
+      debug:
+        msg: "{{ swarm_init_ip }}"
+
+    - include_tasks: ../tasks/swarm-bootstrap.yml
+      vars: 
+        join_addr: "{{ swarm_init_ip }}"
+
+- name: Add additional managers to the swarm
+  hosts: managers
+  user: root
+  gather_facts: false
+  serial: 100%
+  vars:
+    manager_join_key:
+      "{{ hostvars[groups['bootstrap'][0]]['manager_key']['stdout'] }}"
+    swarm_init_ip:
+      "{{ hostvars[groups['bootstrap'][0]]['swarm_init_ip'] }}"
+  tasks:
+    - include_tasks: ../tasks/swarm-join.yml
+      vars: 
+        join_addr: "{{ swarm_init_ip }}"
+        join_key: "{{ manager_join_key }}"
+
+- name: Add workers to the swarm
+  hosts: workers
+  user: root
+  gather_facts: false
+  serial: 100%
+  vars:
+    worker_join_key:
+      "{{ hostvars[groups['bootstrap'][0]]['worker_key']['stdout'] }}"
+    swarm_init_ip:
+      "{{ hostvars[groups['bootstrap'][0]]['swarm_init_ip'] }}"
+  tasks:
+    - include_tasks: ../tasks/swarm-join.yml
+      vars: 
+        join_addr: "{{ swarm_init_ip }}"
+        join_key: "{{ worker_join_key }}"

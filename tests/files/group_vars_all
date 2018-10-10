@@ -12,7 +12,8 @@ chosen_timezone: "America/New_York"
 # this will allow automatic dns for for things like dokuwiki.test.com and portainer.test.com
 root_domain: test.com
 
-
+# interface for the swarm network
+swarm_network_interface: enp0s8
 
 ### Persistent storage if you are doing a single machine deploy, local is an option. If you are doing multi instance deploy, choose one of the following:
 # nfs

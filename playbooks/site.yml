@@ -19,6 +19,8 @@
   tasks:
    - include: ../roles/common/tasks/main.yml
 
+- import_playbook: swarm.yml
+
 # - name: Deploy startup-infrastructure swarm stack
 #   hosts: bootstrap
 #   user: root

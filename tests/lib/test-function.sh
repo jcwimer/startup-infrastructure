@@ -5,7 +5,7 @@ green=`tput setaf 2`
 reset=`tput sgr0`
 #echo "${red}red text ${green}green text${reset}"
 
-function test {
+function testbash() {
   local name="${1}"
   shift
   local command="${@}"

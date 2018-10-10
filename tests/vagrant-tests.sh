@@ -8,19 +8,42 @@ function main {
   run-tests
   destroy-infrastructure
 }
+
 function run-tests {
   trap "destroy-infrastructure; exit 1" ERR
   echo Building vagrant infrastructure
   vagrant up
 
-  test "Running command on a vagrant node should not fail." \
+  testbash "Running command on a vagrant node should not fail." \
     "vagrant ssh client -c 'ls /vagrant'"
 
-  test "Client vagrant machine can ssh into bootstrap." \
+  testbash "Client vagrant machine can ssh into bootstrap." \
     "vagrant ssh client -c 'ssh -o StrictHostKeyChecking=no -i /home/vagrant/test_rsa vagrant@192.168.254.2 ls'"
 
-  test "Running deploy script should not fail." \
+  testbash "Running deploy script should not fail." \
     "vagrant ssh client -c 'bash /vagrant/tests/files/run-test-deploy.sh'"
+
+  local -r node_ls_output=$(vagrant ssh bootstrap \
+              -c "docker node ls --format '{{.Hostname}} {{.Status}} {{.Availability}} {{.ManagerStatus}}'"
+  )
+  echo docker node ls output is:
+  echo $node_ls_output
+  local -r number_of_docker_leaders=$(echo "${node_ls_output}" \
+            | grep -v 'Connection' \
+            | awk '{ print $4 }' \
+            | grep '^Leader$' \
+            | wc -l)
+  local -r number_of_docker_nodes=$(echo "${node_ls_output}" \
+            | grep -v 'Connection' \
+            | awk '{ print $1 }' \
+            | wc -l)
+
+  testbash "There are 2 docker swarm nodes" \
+    "test ${number_of_docker_nodes} -eq 2"
+
+  testbash "The swarm has a leader" \
+    "test ${number_of_docker_leaders} -eq 1"
+
 }
 
 function destroy-infrastructure {

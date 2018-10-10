@@ -1,0 +1,7 @@
+---
+- name: Add swarm node to the cluster
+  command: >
+      docker swarm join --token "{{ join_key }}" "{{ join_addr }}":2377
+  register: docker_swarm_join
+  changed_when: docker_swarm_join.rc == 0
+  ignore_errors: true
