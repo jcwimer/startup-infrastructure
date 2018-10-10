@@ -11,11 +11,13 @@ function main {
 function run-tests {
   trap "destroy-infrastructure; exit 1" ERR
   echo Building vagrant infrastructure
-  test "Building infrastructure with vagrant up should not fail." \
-    "vagrant up > /dev/null"
+  vagrant up
 
   test "Running command on a vagrant node should not fail." \
-    vagrant ssh bootstrap -c ls
+    "vagrant ssh client -c 'ls /vagrant'"
+
+  test "Client vagrant machine can ssh into bootstrap." \
+    "vagrant ssh client -c 'ssh -o StrictHostKeyChecking=no -i /home/vagrant/test_rsa vagrant@192.168.254.2 ls'"
 }
 
 function destroy-infrastructure {
