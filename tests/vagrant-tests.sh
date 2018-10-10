@@ -18,6 +18,9 @@ function run-tests {
 
   test "Client vagrant machine can ssh into bootstrap." \
     "vagrant ssh client -c 'ssh -o StrictHostKeyChecking=no -i /home/vagrant/test_rsa vagrant@192.168.254.2 ls'"
+
+  test "Running deploy script should not fail." \
+    "vagrant ssh client -c 'bash /vagrant/tests/files/run-test-deploy.sh'"
 }
 
 function destroy-infrastructure {

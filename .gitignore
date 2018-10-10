@@ -1,2 +1,5 @@
 group_vars/all
 hosts
+playbooks/*.retry
+.vagrant
+*ubuntu*.log

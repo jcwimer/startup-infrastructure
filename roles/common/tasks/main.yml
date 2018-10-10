@@ -32,36 +32,23 @@
     - mysql-client
     - wget
     - nfs-common
-    - docker-ce={{docker_ce_version_to_install}}
     - sshpass
     - ack-grep
     - dnsutils
     - nmon
     - build-essential
     - tmux
+    - sudo
 
-- name: Create standard user
-  user:
-    name: "{{ standard_user }}"
-    groups:
-      - sudo
-      - docker
-    state: present
-    shell: /bin/bash
+- name: Install docker-ce 
+  shell: >
+    apt-get install -y -qq docker-ce=$(apt-cache madison docker-ce | grep "{{ docker_ce_version_to_install }}" | awk {'print $3'})
 
 - name: Add standard_user to docker group
   user:
     name: "{{ standard_user }}"
     groups: docker
     append: yes
-
-- name: Set authorized key took from url
-  become: yes
-  become_user: "{{ standard_user }}"
-  authorized_key:
-    user: "{{ standard_user }}"
-    state: present
-    key: "{{ default_pub_key }}"
 
 - name: Docker compose version
   get_url:
