@@ -30,7 +30,7 @@ This is an Ansible playbook that configures a Docker Swarm cluster and deploys a
     * Bootstrap will be the first node in the cluster. If you are only doing a one node cluster, this is where you put your ip
     * Managers are nodes used for managing a swarm cluster. Managers are recommended in 3's or 5's (bootstrap is a manager). Please see this for swarm best practices: https://docs.docker.com/engine/swarm/admin_guide/
     * Workers are nodes used for running containers. You can have as many as necessary.
- 2. Copy group_vars/all_example to group_vars/all
+ 2. Copy group_vars/all.example to group_vars/all
     * This is where a lot of configuration comes in. Please see our documentation.
  3. Run `bash supporting-scripts/deploy.sh`
 
