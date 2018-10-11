@@ -14,6 +14,26 @@ This is an Ansible playbook that configures a Docker Swarm cluster and deploys a
 3. http://kanban.test.com - Wekan
 4. http://wiki.test.com - Dokuwiki
 
+# Deploy
+
+### Requirements
+1. Python
+2. Pip
+3. Pipenv
+4. SSH access to all nodes you're deploying to. 
+   * You will need to define and environment variable for your ssh key. `export PRIVATE_KEY="/location/of/key"`
+   * OR you will need a ssh agent running
+
+### Steps
+1. Copy hosts.example to hosts
+    * Put ip addresses under the sections
+    * Bootstrap will be the first node in the cluster. If you are only doing a one node cluster, this is where you put your ip
+    * Managers are nodes used for managing a swarm cluster. Managers are recommended in 3's or 5's (bootstrap is a manager). Please see this for swarm best practices: https://docs.docker.com/engine/swarm/admin_guide/
+    * Workers are nodes used for running containers. You can have as many as necessary.
+ 2. Copy group_vars/all_example to group_vars/all
+    * This is where a lot of configuration comes in. Please see our documentation.
+ 3. Run `bash supporting-scripts/deploy.sh`
+
 # Lab environment
 
 You can easily run a lab environment with Vagrant. 
