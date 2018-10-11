@@ -44,6 +44,9 @@ function run-tests {
   testbash "The swarm has a leader" \
     "test ${number_of_docker_leaders} -eq 1"
 
+  testbash "Traefik got deployed" \
+    "vagrant ssh client -c 'curl --silent http://swarm.test.com:8081/ping | grep OK > /dev/null'"
+
 }
 
 function destroy-infrastructure {

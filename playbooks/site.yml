@@ -21,9 +21,9 @@
 
 - import_playbook: swarm.yml
 
-# - name: Deploy startup-infrastructure swarm stack
-#   hosts: bootstrap
-#   user: root
-#   serial: 100%
-#   tasks:
-#     - include: ../roles/startup-infrastructure/tasks/main.yml
+- name: Deploy startup-infrastructure swarm stack
+  hosts: bootstrap
+  user: root
+  serial: 100%
+  tasks:
+    - include: ../roles/startup-infrastructure/tasks/main.yml
