@@ -42,9 +42,10 @@ You can easily run a lab environment with Vagrant.
 1. Install [Virtualbox](https://www.virtualbox.org/)
 2. Install [Vagrant](https://www.vagrantup.com/)
 3. Run `vagrant up`
-3. Put the following in your `/etc/hosts` file: 
-   * `192.168.254.2    *.test.com` 
-4. Now navigate to any of the services at http://servicename.test.com
+4. Run `vagrant ssh client -c 'bash /vagrant/tests/files/run-test-deploy.sh'`
+5. Put the following in your `/etc/hosts` file: 
+   * `192.168.254.2    swarm.test.com` 
+6. Now navigate to any of the services at http://servicename.test.com
 
 
 # Development
