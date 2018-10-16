@@ -9,6 +9,6 @@
 - name: Init admin account if it hasn't already
   shell: >
     curl -X POST "http://portainer.{{ root_domain }}/api/users/admin/init" -H  "accept: application/json" -H  \
-    "Content-Type: application/json" -d "{  \"Username\": \"admin\",  \"Password\": \"admin-password\"}"
+    "Content-Type: application/json" -d "{  \"Username\": \"admin\",  \"Password\": \"{{ portainer_admin_password }}\"}"
   when: not admin_account_check.stdout | search("204")
   delegate_to: localhost
