@@ -16,5 +16,12 @@
   become: true
 
 - name: Run stack deploy
-  shell: cd /data && docker stack deploy -c startup-infrastructure.yml startup-infrastructure
+  shell: >
+    docker stack deploy -c /data/startup-infrastructure.yml startup-infrastructure
   become: true
+
+- name: Give containers time to spin up
+  wait_for:
+    timeout: 120
+
+- include_tasks: configure-portainer.yml

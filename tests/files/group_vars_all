@@ -11,6 +11,7 @@ chosen_timezone: "America/New_York"
 # root domain for all services. You should have an A record for *.root_domain. For example, if your domain is test.com you should have an A record for *.test.com pointing to your node.
 # this will allow automatic dns for for things like dokuwiki.test.com and portainer.test.com
 root_domain: test.com
+portainer_admin_password: "admin-password"
 
 # interface for the swarm network
 swarm_network_interface: enp0s8

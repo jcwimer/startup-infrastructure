@@ -47,6 +47,9 @@ function run-tests {
   testbash "Traefik got deployed" \
     "vagrant ssh client -c 'curl --silent http://swarm.test.com:8081/ping | grep OK > /dev/null'"
 
+  testbash "Portainer was deployed and admin account was initialized" \
+    "vagrant ssh client -c 'curl --silent -I \
+   -X GET \"http://portainer.test.com/api/users/admin/check\" -H  \"accept: application/json\"' | grep 204"
 }
 
 function destroy-infrastructure {

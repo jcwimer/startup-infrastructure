@@ -1,97 +1,3 @@
-  portainer:
-    image: portainer/portainer
-    networks:
-      - appnet
-    volumes:
-      - portainer_data:/data
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    deploy:
-      labels:
-        - "traefik.frontend.entryPoints=http"
-        - "traefik.protocol=http"
-        - "traefik.backend=portainer"
-        - "traefik.port=9000"
-        - "traefik.docker.network=appnet"
-        - "traefik.frontend.rule=Host:portainer.{{ root_domain }}"
-      mode: replicated
-      replicas: 1
-      {% if {{ groups['workers'] | length }} > 0 %}
-      placement:
-        constraints:
-          - node.role == worker
-      {% endif %}
-
-  bitwarden:
-    image: mprasil/bitwarden
-    networks:
-      - appnet
-    volumes:
-      - bitwarden_data:/data
-    deploy:
-      labels:
-        - "traefik.frontend.entryPoints=http"
-        - "traefik.protocol=http"
-        - "traefik.backend=bitwarden"
-        - "traefik.port=80"
-        - "traefik.docker.network=appnet"
-        - "traefik.frontend.rule=Host:bitwarden.{{ root_domain }}"
-      mode: replicated
-      replicas: 1
-      {% if {{ groups['workers'] | length }} > 0 %}
-      placement:
-        constraints:
-          - node.role == worker
-      {% endif %}
-
-  gitea:
-    image: gitea/gitea:latest
-    environment:
-      - USER_UID=1000
-      - USER_GID=1000
-    networks:
-      - appnet
-    volumes:
-      - gitea_data:/data
-    ports:
-      - "2222:22"
-    deploy:
-      labels:
-        - "traefik.frontend.entryPoints=http"
-        - "traefik.protocol=http"
-        - "traefik.backend=git"
-        - "traefik.port=3000"
-        - "traefik.docker.network=appnet"
-        - "traefik.frontend.rule=Host:git.{{ root_domain }}"
-      mode: replicated
-      replicas: 1
-      {% if {{ groups['workers'] | length }} > 0 %}
-      placement:
-        constraints:
-          - node.role == worker
-      {% endif %}
-
-  dokuwiki:
-    image: mprasil/dokuwiki
-    networks:
-      - appnet
-    volumes:
-      - dokuwiki_data:/dokuwiki
-    deploy:
-      labels:
-        - "traefik.frontend.entryPoints=http"
-        - "traefik.protocol=http"
-        - "traefik.backend=dokuwiki"
-        - "traefik.port=80"
-        - "traefik.docker.network=appnet"
-        - "traefik.frontend.rule=Host:dokuwiki.{{ root_domain }}"
-      mode: replicated
-      replicas: 1
-      {% if {{ groups['workers'] | length }} > 0 %}
-      placement:
-        constraints:
-          - node.role == worker
-      {% endif %}
-
   wekandb:
     # All Wekan data is stored in MongoDB. For backup and restore, see:
     #   https://github.com/wekan/wekan/wiki/Export-Docker-Mongo-Data
@@ -105,7 +11,7 @@
     deploy:
       mode: replicated
       replicas: 1
-      {% if {{ groups['workers'] | length }} > 0 %}
+      {% if (groups['workers'] | length) > 0 %}
       placement:
         constraints:
           - node.role == worker
@@ -132,23 +38,79 @@
         - "traefik.frontend.rule=Host:wekan.{{ root_domain }}"
       mode: replicated
       replicas: 1
-      {% if {{ groups['workers'] | length }} > 0 %}
+      {% if (groups['workers'] | length) > 0 %}
       placement:
         constraints:
           - node.role == worker
       {% endif %}
 
-{% set docker_volumes = ['portainer_data','bitwarden_data','gitea_data','dokuwiki_data','wekan-db','wekan-db-dump'] %}
-volumes:
-{% for volume in docker_volumes %}
-  {{ volume }}:
-  {% if storage_type == 'nfs' %}
-    driver: local
-    driver_opts:
-      type: nfs
-      o: "addr={{ nfs_address }},soft,nolock,rw"
-      device: ":{{ nfs_root_path }}/{{ volume }}"
-  {% elif storage_type == 'local' %}
-    driver: local
-  {% endif %}
-{% endfor %}
+  bitwarden:
+    image: mprasil/bitwarden
+    networks:
+      - appnet
+    volumes:
+      - bitwarden_data:/data
+    deploy:
+      labels:
+        - "traefik.frontend.entryPoints=http"
+        - "traefik.protocol=http"
+        - "traefik.backend=bitwarden"
+        - "traefik.port=80"
+        - "traefik.docker.network=appnet"
+        - "traefik.frontend.rule=Host:bitwarden.{{ root_domain }}"
+      mode: replicated
+      replicas: 1
+      {% if (groups['workers'] | length) > 0 %}
+      placement:
+        constraints:
+          - node.role == worker
+      {% endif %}
+
+  gitea:
+    image: gitea/gitea:latest
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+    networks:
+      - appnet
+    volumes:
+      - gitea_data:/data
+    ports:
+      - "2222:22"
+    deploy:
+      labels:
+        - "traefik.frontend.entryPoints=http"
+        - "traefik.protocol=http"
+        - "traefik.backend=git"
+        - "traefik.port=3000"
+        - "traefik.docker.network=appnet"
+        - "traefik.frontend.rule=Host:git.{{ root_domain }}"
+      mode: replicated
+      replicas: 1
+      {% if (groups['workers'] | length) > 0 %}
+      placement:
+        constraints:
+          - node.role == worker
+      {% endif %}
+
+  dokuwiki:
+    image: mprasil/dokuwiki
+    networks:
+      - appnet
+    volumes:
+      - dokuwiki_data:/dokuwiki
+    deploy:
+      labels:
+        - "traefik.frontend.entryPoints=http"
+        - "traefik.protocol=http"
+        - "traefik.backend=dokuwiki"
+        - "traefik.port=80"
+        - "traefik.docker.network=appnet"
+        - "traefik.frontend.rule=Host:dokuwiki.{{ root_domain }}"
+      mode: replicated
+      replicas: 1
+      {% if (groups['workers'] | length) > 0 %}
+      placement:
+        constraints:
+          - node.role == worker
+      {% endif %}

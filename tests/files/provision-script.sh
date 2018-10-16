@@ -6,6 +6,7 @@ echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDYa9zstumlg7XkKoNrJMlIN/zteqMA9J4Gju
 
 # Setting A record
 echo "192.168.254.2 swarm.test.com" >> /etc/hosts
+echo "192.168.254.2 portainer.test.com" >> /etc/hosts
 
 cp /vagrant/tests/files/test_rsa /home/vagrant/test_rsa
 chmod 600 /home/vagrant/test_rsa

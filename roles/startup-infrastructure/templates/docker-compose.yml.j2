@@ -1,9 +1,12 @@
+#jinja2: lstrip_blocks: True
+# ^that fixes tab in compose files when jinja2 compiles them
+{% set docker_volumes = ['portainer_data','wekan-db','wekan-db-dump'] %}
 version: '3.1'
 networks:
   appnet:
     external: true
-  wekan:
-    driver: bridge
+  portainer:
+    driver: overlay
 
 services:
   traefik:
@@ -16,7 +19,7 @@ services:
       - appnet
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-    command: --docker --docker.swarmMode --docker.domain=traefik --docker.watch --api --ping
+    command: --docker --docker.swarmMode --docker.domain={{ root_domain }} --docker.watch --api --ping
     # --acme --acme.email='test@test.com' --acme.storage='acme.json' --acme.entrypoint='https'
     deploy:
       mode: replicated
@@ -24,3 +27,57 @@ services:
       placement:
         constraints:
           - node.role == manager
+
+  portainer-agent:
+    image: portainer/agent
+    environment:
+      # REQUIRED: Should be equal to the service name prefixed by "tasks." when
+      # deployed inside an overlay network
+      AGENT_CLUSTER_ADDR: tasks.portainer-agent
+      # AGENT_PORT: 9001
+      # LOG_LEVEL: debug
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker/volumes:/var/lib/docker/volumes
+    networks:
+      - portainer
+    deploy:
+      mode: global
+      placement:
+        constraints: [node.platform.os == linux]
+
+  portainer:
+    image: portainer/portainer
+    command: -H tcp://tasks.portainer-agent:9001 --tlsskipverify
+    volumes:
+      - portainer_data:/data
+    networks:
+      - portainer
+      - appnet
+    deploy:
+      labels:
+        - "traefik.frontend.entryPoints=http"
+        - "traefik.protocol=http"
+        - "traefik.backend=portainer"
+        - "traefik.port=9000"
+        - "traefik.docker.network=appnet"
+        - "traefik.frontend.rule=Host:portainer.{{ root_domain }}"
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+
+volumes:
+{% for volume in docker_volumes %}
+  {{ volume }}:
+  {% if storage_type == 'nfs' %}
+    driver: local
+    driver_opts:
+      type: nfs
+      o: "addr={{ nfs_address }},soft,nolock,rw"
+      device: ":{{ nfs_root_path }}/{{ volume }}"
+  {% elif storage_type == 'local' %}
+    driver: local
+  {% endif %}
+{% endfor %}
