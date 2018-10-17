@@ -3,16 +3,12 @@
 This is an Ansible playbook that configures a Docker Swarm cluster and deploys a full set of self hosted tools for a new company. After you point a wildcard A record to the swarm, you will be able to access the following tools. The goal of this project is to create a one stop shop for self hosting your infrastructure.
 
 ### Services
-1. Git server - Using [Gitea](https://gitea.io/en-us/)
-2. Password manager - [Bitwarden](https://bitwarden.com/)
-3. Kanban - Wekan - [Wekan](https://wekan.github.io/)
-4. Wiki - [Dokuwiki](https://www.dokuwiki.org/dokuwiki)
+1. Docker management GUI - Using [Portainer](https://portainer.io/)
+2. Internal swarm load balancer and letsencrypt endpoint - [Traefik](https://traefik.io/)
 
 ### URLs in your environment. If you use ssl obviously these will be https Assuming your A record is *.test.com:
-1. http://git.test.com - Gitea
-2. http://password.test.com - Bitwarden
-3. http://kanban.test.com - Wekan
-4. http://wiki.test.com - Dokuwiki
+1. http://portainer.test.com/ - Portainer
+2. http://swarm.test.com:8081/ - Traefik load balancer dashboard
 
 # Deploy
 
@@ -45,6 +41,7 @@ You can easily run a lab environment with Vagrant.
 4. Run `vagrant ssh client -c 'bash /vagrant/tests/files/run-test-deploy.sh'`
 5. Put the following in your `/etc/hosts` file: 
    * `192.168.254.2    swarm.test.com` 
+   * `192.168.254.2    portainer.test.com` 
 6. Now navigate to any of the services at http://servicename.test.com
 
 
