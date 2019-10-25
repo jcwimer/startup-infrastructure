@@ -1,10 +1,12 @@
-# Node where config files get copied to and docker swarm gets initiated
-# replace localhost with the ip of your bootstrap node
-[bootstrap]
-localhost
+# Define ssh variables
+# Be sure to define your ssh user and your private key path
+[all:vars]
+ansible_ssh_common_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+ansible_private_key_file=/vagrant/lab/test_rsa
+ansible_user=root
 
-# nodes that will be swarm managers (note these will not host services)
-[non-bootstrap-managers]
+# kubernetes masters
+[kube-masters]
 
-# nodes that will be swarm workers (note these will need to have more resources than managers)
-[workers]
+# kubernetes workers
+[kube-workers]

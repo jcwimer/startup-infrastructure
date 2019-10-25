@@ -1,6 +1,0 @@
----
-- name: Replace sudoers file
-  template: src=../roles/gitea/templates/docker-compose.yml.j2 dest=/data/gitea.yml
-
-- name: Run docker-compose
-  shell: cd /data && docker-compose -f gitea.yml up -d

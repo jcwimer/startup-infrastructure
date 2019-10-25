@@ -19,11 +19,10 @@
   tasks:
    - include: ../roles/common/tasks/main.yml
 
-- import_playbook: swarm.yml
+- import_playbook: kubernetes.yml
 
-- name: Deploy startup-infrastructure swarm stack
-  hosts: bootstrap
-  user: root
-  serial: 100%
+- name: Deploy startup-infrastructure to kubernetes
+  hosts: localhost
+  connection: local
   tasks:
     - include: ../roles/startup-infrastructure/tasks/main.yml

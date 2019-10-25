@@ -1,0 +1,236 @@
+# Prometheus configuration format https://prometheus.io/docs/prometheus/latest/configuration/configuration/
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: kube-system
+  labels:
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: EnsureExists
+data:
+  rules.yml: |
+    # raw to endraw is so jija does not fail with prometheus config's double curly brackets in it's syntax
+    # {% raw %}
+    groups:
+    # node-exporter
+    - name: alert.rules_nodes
+      rules:
+      - alert: high_memory_usage_on_node
+        expr: ((node_memory_MemTotal - node_memory_MemAvailable) / node_memory_MemTotal)
+          * 100 > 80
+        for: 5m
+        annotations:
+          description: '{{ $labels.host }} is using a LOT of MEMORY. MEMORY usage is over
+            {{ humanize $value}}%.'
+          summary: HIGH MEMORY USAGE WARNING TASK ON '{{ $labels.host }}'
+      - alert: high_la_usage_on_node
+        expr: node_load5 > 7
+        for: 5m
+        annotations:
+          description: '{{ $labels.host }} has a high load average. Load Average 5m is
+            {{ humanize $value}}.'
+          summary: HIGH LOAD AVERAGE WARNING ON '{{ $labels.host }}'
+      - alert: node_running_out_of_disk_space
+        expr: (node_filesystem_size{mountpoint="/"} - node_filesystem_free{mountpoint="/"})
+          * 100 / node_filesystem_size{mountpoint="/"} > 80
+        for: 5m
+        annotations:
+          description: More than 80% of disk used. Disk usage {{ humanize $value }}%.
+          summary: 'LOW DISK SPACE WARING: NODE ''{{ $labels.host }}'''
+      - alert: monitoring_service_down
+        expr: up == 0
+        for: 90s
+        annotations:
+          description: "The monitoring service '{{ $labels.job }}' is down."
+          summary: "MONITORING SERVICE DOWN WARNING: NODE '{{ $labels.host }}'"
+    # {% endraw %}
+
+    # ceph
+    - name: alert.rules_ceph
+      rules:
+      - alert: ceph_health_warning
+        expr: ceph_health_status == 1
+        for: 5m
+        annotations:
+          description: CEPH CLUSTER HEALTH WARNING
+          summary: CEPH CLUSTER HEALTH WARNING
+
+  prometheus.yml: |
+    alerting:
+      alertmanagers:
+        - static_configs:
+          - targets: ["alertmanager"]
+    rule_files:
+    - "rules.yml"
+    scrape_configs:
+    #- job_name: 'ceph'
+    #  static_configs:
+    #  - targets:
+    #    - 'rook-ceph-mgr-external:9283'
+    - job_name: 'kubernetes-node-exporter'
+      dns_sd_configs:
+      - names:
+        - 'node-exporter'
+        type: 'A'
+        port: 9100
+
+    - job_name: prometheus
+      static_configs:
+      - targets:
+        - localhost:9090
+
+    - job_name: kubernetes-apiservers
+      kubernetes_sd_configs:
+      - role: endpoints
+      relabel_configs:
+      - action: keep
+        regex: default;kubernetes;https
+        source_labels:
+        - __meta_kubernetes_namespace
+        - __meta_kubernetes_service_name
+        - __meta_kubernetes_endpoint_port_name
+      scheme: https
+      tls_config:
+        ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        insecure_skip_verify: true
+      bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+
+    - job_name: kubernetes-nodes-kubelet
+      kubernetes_sd_configs:
+      - role: node
+      relabel_configs:
+      - action: labelmap
+        regex: __meta_kubernetes_node_label_(.+)
+      scheme: https
+      tls_config:
+        ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        insecure_skip_verify: true
+      bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+
+    - job_name: kubernetes-nodes-cadvisor
+      kubernetes_sd_configs:
+      - role: node
+      relabel_configs:
+      - action: labelmap
+        regex: __meta_kubernetes_node_label_(.+)
+      - target_label: __metrics_path__
+        replacement: /metrics/cadvisor
+      scheme: https
+      tls_config:
+        ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        insecure_skip_verify: true
+      bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+
+    - job_name: kubernetes-service-endpoints
+      kubernetes_sd_configs:
+      - role: endpoints
+      relabel_configs:
+      - action: keep
+        regex: true
+        source_labels:
+        - __meta_kubernetes_service_annotation_prometheus_io_scrape
+      - action: replace
+        regex: (https?)
+        source_labels:
+        - __meta_kubernetes_service_annotation_prometheus_io_scheme
+        target_label: __scheme__
+      - action: replace
+        regex: (.+)
+        source_labels:
+        - __meta_kubernetes_service_annotation_prometheus_io_path
+        target_label: __metrics_path__
+      - action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        source_labels:
+        - __address__
+        - __meta_kubernetes_service_annotation_prometheus_io_port
+        target_label: __address__
+      - action: labelmap
+        regex: __meta_kubernetes_service_label_(.+)
+      - action: replace
+        source_labels:
+        - __meta_kubernetes_namespace
+        target_label: kubernetes_namespace
+      - action: replace
+        source_labels:
+        - __meta_kubernetes_service_name
+        target_label: kubernetes_name
+
+    - job_name: kubernetes-services
+      kubernetes_sd_configs:
+      - role: service
+      metrics_path: /probe
+      params:
+        module:
+        - http_2xx
+      relabel_configs:
+      - action: keep
+        regex: true
+        source_labels:
+        - __meta_kubernetes_service_annotation_prometheus_io_probe
+      - source_labels:
+        - __address__
+        target_label: __param_target
+      - replacement: blackbox
+        target_label: __address__
+      - source_labels:
+        - __param_target
+        target_label: instance
+      - action: labelmap
+        regex: __meta_kubernetes_service_label_(.+)
+      - source_labels:
+        - __meta_kubernetes_namespace
+        target_label: kubernetes_namespace
+      - source_labels:
+        - __meta_kubernetes_service_name
+        target_label: kubernetes_name
+
+    - job_name: kubernetes-pods
+      kubernetes_sd_configs:
+      - role: pod
+      relabel_configs:
+      - action: keep
+        regex: true
+        source_labels:
+        - __meta_kubernetes_pod_annotation_prometheus_io_scrape
+      - action: replace
+        regex: (.+)
+        source_labels:
+        - __meta_kubernetes_pod_annotation_prometheus_io_path
+        target_label: __metrics_path__
+      - action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        source_labels:
+        - __address__
+        - __meta_kubernetes_pod_annotation_prometheus_io_port
+        target_label: __address__
+      - action: labelmap
+        regex: __meta_kubernetes_pod_label_(.+)
+      - action: replace
+        source_labels:
+        - __meta_kubernetes_namespace
+        target_label: kubernetes_namespace
+      - action: replace
+        source_labels:
+        - __meta_kubernetes_pod_name
+        target_label: kubernetes_pod_name
+    #alerting:
+    #  alertmanagers:
+    #  - kubernetes_sd_configs:
+    #      - role: pod
+    #    tls_config:
+    #      ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+    #    bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+    #    relabel_configs:
+    #    - source_labels: [__meta_kubernetes_namespace]
+    #      regex: kube-system
+    #      action: keep
+    #    - source_labels: [__meta_kubernetes_pod_label_k8s_app]
+    #      regex: alertmanager
+    #      action: keep
+    #    - source_labels: [__meta_kubernetes_pod_container_port_number]
+    #      regex:
+    #      action: drop
+

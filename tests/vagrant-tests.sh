@@ -23,33 +23,12 @@ function run-tests {
   testbash "Running deploy script should not fail." \
     "vagrant ssh client -c 'bash /vagrant/tests/files/run-test-deploy.sh'"
 
-  local -r node_ls_output=$(vagrant ssh bootstrap \
-              -c "docker node ls --format '{{.Hostname}} {{.Status}} {{.Availability}} {{.ManagerStatus}}'"
-  )
-  echo docker node ls output is:
-  echo $node_ls_output
-  local -r number_of_docker_leaders=$(echo "${node_ls_output}" \
-            | grep -v 'Connection' \
-            | awk '{ print $4 }' \
-            | grep '^Leader$' \
-            | wc -l)
-  local -r number_of_docker_nodes=$(echo "${node_ls_output}" \
-            | grep -v 'Connection' \
-            | awk '{ print $1 }' \
-            | wc -l)
+  testbash "Running kubectl should not fail" \
+    "vagrant ssh client -c 'export KUBECONFIG=/opt/rke/kube_config_rke-k8s.yaml; kubectl get nodes'"
 
-  testbash "There are 2 docker swarm nodes" \
-    "test ${number_of_docker_nodes} -eq 2"
-
-  testbash "The swarm has a leader" \
-    "test ${number_of_docker_leaders} -eq 1"
-
-  testbash "Traefik got deployed" \
-    "vagrant ssh client -c 'curl --silent http://swarm.test.com:8081/ping | grep OK > /dev/null'"
-
-  testbash "Portainer was deployed and admin account was initialized" \
-    "vagrant ssh client -c 'curl --silent -I \
-   -X GET \"http://portainer.test.com/api/users/admin/check\" -H  \"accept: application/json\"' | grep 204"
+  # testbash "Portainer was deployed and admin account was initialized" \
+  #   "vagrant ssh client -c 'curl --silent -I \
+  #  -X GET \"http://portainer.test.com/api/users/admin/check\" -H  \"accept: application/json\"' | grep 204"
 }
 
 function destroy-infrastructure {

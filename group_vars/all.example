@@ -2,8 +2,14 @@
 # Variables listed here are applicable to all host groups
 
 ### Software versions
-docker_compose_version_to_install: 1.18.0
 docker_ce_version_to_install: 18.03.1
+
+### rke variables
+rke_directory: /root/rke
+rke_ssh_key_location: /root/id_rsa
+rke_node_directory: /opt/rke
+rke_version: 0.3.1
+rke_cluster_name: rke-k8s
 
 ### User stuff
 standard_user: vagrant
@@ -11,30 +17,3 @@ chosen_timezone: "America/New_York"
 # root domain for all services. You should have an A record for *.root_domain. For example, if your domain is test.com you should have an A record for *.test.com pointing to your node.
 # this will allow automatic dns for for things like dokuwiki.test.com and portainer.test.com
 root_domain: test.com
-
-# interface for the swarm network
-swarm_network_interface: eth1
-
-### Persistent storage if you are doing a single machine deploy, local is an option. If you are doing multi instance deploy, choose one of the following:
-# nfs
-# digitalocean
-# gcp
-# aws
-# openstack
-# ceph
-# then fill out the variables associated with your choice below
-storage_type: "local"
-
-# nfs variables: these need defined if using nfs storage
-#nfs_address: 0.0.0.0
-#nfs_root_path: /some/filepath/on/nfs
-
-# digitalocean variables: these need defined if using digitalocean storage
-
-# gcp variables: these need defined if using gcp storage
-
-# aws variables: these need defined if using aws storage
-
-# openstack variables: these need defined if using openstack storage
-
-# ceph variables: these need defined if using ceph storage

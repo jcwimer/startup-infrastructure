@@ -1,25 +1,17 @@
 ---
 # This playbook contains plays that will run on all nodes
 
-- name: Add docker key
-  apt_key:
-    url: https://download.docker.com/linux/ubuntu/gpg
-    state: present
 
-- name: Add docker repo
-  apt_repository:
-    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
-    state: present
-
-- name: Update apt
-  apt: update_cache=yes
 
 #- name: Upgrade APT to the lastest packages
 #  apt: upgrade=dist
-
+- name: Update apt
+  apt: update_cache=yes
+  
 - name: Install standard programs
   apt: name={{ item }}  state=present force=yes
   with_items:
+    - apt-transport-https
     - htop
     - curl
     - openssh-server
@@ -40,6 +32,19 @@
     - tmux
     - sudo
 
+- name: Add docker key
+  apt_key:
+    url: https://download.docker.com/linux/{{ ansible_distribution|lower }}/gpg
+    state: present
+
+- name: Add docker repo
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/{{ ansible_distribution|lower }} {{ ansible_distribution_release }} stable
+    state: present
+
+- name: Update apt
+  apt: update_cache=yes
+
 - name: Install docker-ce 
   shell: >
     apt-get install -y -qq docker-ce=$(apt-cache madison docker-ce | grep "{{ docker_ce_version_to_install }}" | awk {'print $3'})
@@ -49,14 +54,6 @@
     name: "{{ standard_user }}"
     groups: docker
     append: yes
-
-- name: Docker compose version
-  get_url:
-    url: "https://github.com/docker/compose/releases/download/{{docker_compose_version_to_install}}/docker-compose-{{ ansible_system }}-{{ ansible_userspace_architecture }}"
-    dest: /usr/local/bin/docker-compose
-    validate_certs: false
-    mode: 755
-    group: docker
 
 - name: Set timezone to NewYork
   timezone:
