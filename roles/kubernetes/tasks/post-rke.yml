@@ -10,3 +10,17 @@
     src: "{{ rke_directory }}/{{ rke_cluster_name }}.rkestate"
     dest: "{{ rke_node_directory }}/{{ rke_cluster_name }}.rkestate"
   become: true 
+
+- name: Create .kube folder in standard users home directory
+  file: 
+    path: /home/{{ standard_user }}/.kube
+    state: directory
+  become: true
+  delegate_to: localhost
+
+- name: Copy kube config to standard users home directory
+  copy:
+    src:  "{{ rke_directory }}/kube_config_{{ rke_cluster_name }}.yaml"
+    dest: /home/{{ standard_user }}/.kube/config
+  become: true 
+  delegate_to: localhost

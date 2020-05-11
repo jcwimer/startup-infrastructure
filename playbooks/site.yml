@@ -14,15 +14,19 @@
 
 - name: Apply common configuration to all nodes
   hosts: all
-  user: root
   serial: 100%
-  tasks:
-   - include: ../roles/common/tasks/main.yml
+  roles:
+   - role: ../roles/common
 
 - import_playbook: kubernetes.yml
 
 - name: Deploy startup-infrastructure to kubernetes
   hosts: localhost
   connection: local
-  tasks:
-    - include: ../roles/startup-infrastructure/tasks/main.yml
+  roles:
+    - role: ../roles/startup-infrastructure
+    - role: ../roles/rook-ceph
+      when: rook_enabled is defined and rook_enabled | bool == True
+    - role: ../roles/longhorn
+      when: longhorn_enabled is defined and longhorn_enabled | bool == True
+    - role: ../roles/presslabs-mysql

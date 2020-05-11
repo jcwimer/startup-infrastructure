@@ -1,13 +1,12 @@
 ---
 - name: Create Startup Infrastructure Directory
   file:
-    path: /opt/startup-infrastructure
+    path: "{{ startup_infrastructure_directory }}"
     state: directory
-  become: true
 
 - name: Download Helm
   get_url:
-    url: https://get.helm.sh/helm-v2.14.3-linux-amd64.tar.gz
+    url: https://get.helm.sh/helm-v2.16.6-linux-amd64.tar.gz
     dest: /tmp/helm.tar.gz
   become: true
 
@@ -42,21 +41,29 @@
 
 - name: Create Tiller serviceaccount
   command: kubectl -n kube-system create serviceaccount tiller
-  become: true
-  environment:
-    KUBECONFIG: "{{ rke_directory }}/kube_config_{{ rke_cluster_name }}.yaml"
+  ignore_errors: true
 
 - name: Create Tiller rbac
-  become: true
   command: >
     kubectl create clusterrolebinding tiller \
       --clusterrole=cluster-admin \
       --serviceaccount=kube-system:tiller
-  environment:
-    KUBECONFIG: "{{ rke_directory }}/kube_config_{{ rke_cluster_name }}.yaml"
 
 - name: Initialize Tiller
   command: helm init --service-account tiller
-  become: true
-  environment:
-    KUBECONFIG: "{{ rke_directory }}/kube_config_{{ rke_cluster_name }}.yaml"
+
+- name: Wait for Tiller to be running
+  command: >
+    bash -c "kubectl -n kube-system get pods | grep tiller | grep Running"
+  retries: 10
+  delay: 30
+  register: tiller_running
+  until: tiller_running.rc == 0
+
+- name: Wait for Tiller to be initialized
+  command: >
+    bash -c "kubectl rollout status -w deployment/tiller-deploy --namespace=kube-system | grep "successfully rolled out""
+  retries: 10
+  delay: 30
+  register: tiller_init
+  until: tiller_init.rc == 0

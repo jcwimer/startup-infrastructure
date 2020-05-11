@@ -7,6 +7,7 @@
 #  apt: upgrade=dist
 - name: Update apt
   apt: update_cache=yes
+  become: true
   
 - name: Install standard programs
   apt: name={{ item }}  state=present force=yes
@@ -31,37 +32,50 @@
     - build-essential
     - tmux
     - sudo
+  become: true
+
+
+- name: Install required packages for Longhorn
+  apt: name={{ item }}  state=present force=yes
+  with_items:
+    - open-iscsi
+    - curl
+  become: true
+  when: longhorn_enabled is defined and longhorn_enabled | bool == True
 
 - name: Add docker key
   apt_key:
     url: https://download.docker.com/linux/{{ ansible_distribution|lower }}/gpg
     state: present
+  become: true
 
 - name: Add docker repo
   apt_repository:
     repo: deb [arch=amd64] https://download.docker.com/linux/{{ ansible_distribution|lower }} {{ ansible_distribution_release }} stable
     state: present
+  become: true
 
 - name: Update apt
   apt: update_cache=yes
+  become: true
 
 - name: Install docker-ce 
   shell: >
     apt-get install -y -qq docker-ce=$(apt-cache madison docker-ce | grep "{{ docker_ce_version_to_install }}" | awk {'print $3'})
+  become: true
 
 - name: Add standard_user to docker group
   user:
     name: "{{ standard_user }}"
     groups: docker
     append: yes
+  become: true
 
 - name: Set timezone to NewYork
   timezone:
       name: "{{ chosen_timezone }}"
   ignore_errors: true
-
-- name: Replace sudoers file
-  template: src=../roles/common/templates/sudoers.j2 dest=/etc/sudoers
+  become: true
 
 - name: Create /etc/docker
   file:
@@ -70,16 +84,16 @@
     owner: root
     mode: 700
     state: directory
+  become: true
 
 - name: Replace docker daemon file
   template: src=../roles/common/templates/docker-daemon.json.j2 dest=/etc/docker/daemon.json
   register: dockerdaemon
+  become: true
 
 - name: Restart docker if daemon changes
   service:
     name: docker
     state: restarted
   when: dockerdaemon.changed
-
-- name: Creates directory
-  file: path=/data state=directory
+  become: true

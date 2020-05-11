@@ -1,19 +1,7 @@
 ---
-- name: Pre rke
+- name: Deploy Kubernetes
   hosts: kube-masters kube-workers
   gather_facts: yes
   serial: 100%
-  tasks:
-    - include: ../roles/kubernetes/tasks/pre-rke.yml
-
-- name: Set up Kubernetes
-  hosts: localhost
-  tasks:
-   - include: ../roles/kubernetes/tasks/main.yml
-
-- name: Post rke
-  hosts: kube-masters kube-workers
-  gather_facts: yes
-  serial: 100%
-  tasks:
-    - include: ../roles/kubernetes/tasks/post-rke.yml
+  roles:
+   - role: ../roles/kubernetes

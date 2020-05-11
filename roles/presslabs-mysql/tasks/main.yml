@@ -1,0 +1,45 @@
+---
+- name: Create Mysql Directory
+  file:
+    path: "{{ startup_infrastructure_directory }}/presslabs-mysql-operator"
+    state: directory
+
+- name: Add presslabs helm repo
+  command: helm repo add presslabs https://presslabs.github.io/charts
+
+- name: Install the presslabs mysql operator
+  command: helm install presslabs/mysql-operator --name presslabs-mysql-operator
+
+- name: Wait for mysql-operator to be Running
+  command: >
+    bash -c "kubectl get pods --all-namespaces | grep presslabs-mysql-operator | grep Running"
+  retries: 10
+  delay: 30
+  register: mysql_operator_init
+  until: mysql_operator_init.rc == 0
+
+- name: Put mysql cluster yaml in place
+  template:
+    src: presslabs-mysql-cluster.yaml.j2
+    dest: "{{ startup_infrastructure_directory }}/presslabs-mysql-operator/presslabs-mysql-cluster.yaml"
+
+- name: Deploy mysql cluster
+  command: >
+    kubectl apply -f {{ startup_infrastructure_directory }}/presslabs-mysql-operator/presslabs-mysql-cluster.yaml
+
+- name: Wait for cluster to be Running
+  command: >
+    bash -c "kubectl get mysql | grep {{ mysql_cluster_name }} | grep True"
+  retries: 10
+  delay: 60
+  register: mysql_cluster_init
+  until: mysql_cluster_init.rc == 0
+
+- name: Test a query on the cluster
+  command: >
+    kubectl run mysql-client --image=mysql:5.7 -it --rm --restart=Never \
+      -- mysql -h {{ mysql_cluster_name }}-mysql -u root -p{{ mysql_root_password }} -e "show databases; show slave status;"
+  retries: 10
+  delay: 20
+  register: mysql_cluster_query
+  until: mysql_cluster_query.rc == 0

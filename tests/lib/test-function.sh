@@ -9,7 +9,7 @@ function testbash() {
   local name="${1}"
   shift
   local command="${@}"
-  eval $command
+  eval "${command}"
   local return=$?
   if [[ ! $return -eq 0 ]]; then
     echo "${red}FAILED: ${name}${reset}"

@@ -41,6 +41,36 @@
     group: "{{ standard_user }}"
   become: true 
 
+- name: Create flex volume folder
+  file: 
+    path: /usr/libexec/kubernetes/kubelet-plugins/volume/exec
+    state: directory
+  become: true
+
+- name: Create Rook storage Directory
+  file:
+    path: /var/lib/rook
+    state: directory
+    mode: '0774'
+  become: true
+  when: rook_enabled is defined and rook_enabled | bool == True
+
+- name: Create Longhorn Storage Directory
+  file:
+    path: /var/lib/rancher/longhorn
+    state: directory
+    mode: '0774'
+  become: true
+  when: longhorn_enabled is defined and longhorn_enabled | bool == True
+
+- name: Create Longhorn Setting Directory
+  file:
+    path: /var/lib/longhorn-setting
+    state: directory
+    mode: '0774'
+  become: true
+  when: longhorn_enabled is defined and longhorn_enabled | bool == True
+
 - name: Check if RKE cluster state file exists
   stat:
     path: "{{ rke_node_directory }}/{{ rke_cluster_name }}.rkestate"

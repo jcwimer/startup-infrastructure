@@ -1,19 +1,56 @@
 ---
 # Variables listed here are applicable to all host groups
 
-### Software versions
-docker_ce_version_to_install: 18.03.1
-
-### rke variables
-rke_directory: /root/rke
-rke_ssh_key_location: /root/id_rsa
-rke_node_directory: /opt/rke
-rke_version: 0.3.1
-rke_cluster_name: rke-k8s
-
-### User stuff
-standard_user: vagrant
+################################ REQUIRED ################################
+################################ User stuff
+standard_user: ubuntu
 chosen_timezone: "America/New_York"
 # root domain for all services. You should have an A record for *.root_domain. For example, if your domain is test.com you should have an A record for *.test.com pointing to your node.
 # this will allow automatic dns for for things like dokuwiki.test.com and portainer.test.com
 root_domain: test.com
+
+# the directory on your localhost to store all deployment yaml for apps deployed
+# this directory will be created but the standard_user will need permissions to write to create the directory
+startup_infrastructure_directory: /home/{{ standard_user }}/startup-infrastructure
+
+# the location on your localhost of the ssh key to log into all of your nodes
+rke_ssh_key_location: /home/{{ standard_user }}/.ssh/id_rsa
+
+################################ STORAGE CONFIG
+# Only enable 1 of these
+# 1 is required
+# use True for the one you'd like to enable
+
+# if you do not want to use cloud native block storage like ebs, cinder, etc then use this. Rook creates a local ceph cluster on your Kubernetes nodes.
+#rook_enabled: False
+
+# if you are not a fan of ceph, you can use Longhorn for block storage in your Kubernetes cluster.
+#longhorn_enabled: False
+
+################################ MYSQL CONFIG
+mysql_root_password: password
+mysql_replicas: 3
+mysql_cluster_name: mysql-cluster
+
+
+################################ OPTIONAL ################################
+################################ Startup Infrastructure
+
+
+################################ RKE (Kubernetes deployment) variables
+
+# the directory on your localhost to download and deploy rke
+#rke_directory: /home/{{ standard_user }}/rke
+
+# the directory on all nodes where the rke statefile and kubeconfig will go
+#rke_node_directory: /opt/rke
+
+#rke_version: 1.0.8
+#rke_cluster_name: rke-k8s
+#kubernetes_version: 1.15.11
+
+# if your kubernetes network will run over an interface that is not the default interface in the OS then set this value
+#kubernetes_network_interface: eth1
+
+################################ Software versions
+#docker_ce_version_to_install: 19.03.5

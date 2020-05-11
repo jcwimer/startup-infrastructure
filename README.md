@@ -15,9 +15,10 @@ This is an Ansible playbook that configures a Kubernetes cluster and deploys a f
 3. Pipenv
 4. Docker
 5. SSH access to all nodes you're deploying to. 
+6. A standard user with sudo access to all nodes
 
 ### Requirements for infrastructure (the machines you're deploying to)
-1. Ubuntu
+1. Ubuntu or Debian
 2. Internet access
 
 ### Steps
@@ -38,12 +39,7 @@ You can easily run a lab environment with Vagrant.
 2. Install [Vagrant](https://www.vagrantup.com/)
 3. Run `vagrant up`
 4. Run `vagrant ssh client -c 'bash /vagrant/tests/files/run-test-deploy.sh'`
-5. Put the following in your `/etc/hosts` file: 
-```
-192.168.254.2    kanban.test.com
-192.168.254.2    mysql-orchestrator.test.com
-```
-6. Now navigate to any of the services at http://servicename.test.com
+5. Now navigate to any of the services at http://servicename.192.168.254.3.xip.io (for example: http://ceph.192.168.254.3.xip.io)
 
 
 # Development

@@ -1,0 +1,4 @@
+---
+mysql_root_password: password
+mysql_replicas: 3
+mysql_cluster_name: mysql-cluster

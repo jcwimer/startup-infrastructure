@@ -1,4 +1,5 @@
 #!/bin/bash
+set -eEuo pipefail
 
 project_dir="$(dirname $( dirname $(readlink -f ${BASH_SOURCE[0]})))"
 source ${project_dir}/tests/lib/test-function.sh
@@ -24,11 +25,13 @@ function run-tests {
     "vagrant ssh client -c 'bash /vagrant/tests/files/run-test-deploy.sh'"
 
   testbash "Running kubectl should not fail" \
-    "vagrant ssh client -c 'export KUBECONFIG=/opt/rke/kube_config_rke-k8s.yaml; kubectl get nodes'"
+    "vagrant ssh client -c 'kubectl get nodes'"
 
-  # testbash "Portainer was deployed and admin account was initialized" \
-  #   "vagrant ssh client -c 'curl --silent -I \
-  #  -X GET \"http://portainer.test.com/api/users/admin/check\" -H  \"accept: application/json\"' | grep 204"
+  testbash "Longhorn dashboard is running" \
+    "vagrant ssh client -c 'curl --silent -I -X GET http://longhorn.192.168.254.3.xip.io/dashboard' | grep '200 OK'"
+
+  testbash "Running a query on the mysql cluster should not fail" \
+    "vagrant ssh client -c 'bash /vagrant/tests/lib/mysql-query.sh'"
 }
 
 function destroy-infrastructure {

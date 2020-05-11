@@ -1,19 +1,18 @@
 ---
-# Variables listed here are applicable to all host groups
-
-### Software versions
-docker_ce_version_to_install: 18.03.1
-
-### rke variables
-rke_directory: /opt/rke
-rke_ssh_key_location: /vagrant/tests/files/test_rsa
-rke_node_directory: /opt/rke
-rke_version: 0.3.1
-rke_cluster_name: rke-k8s
-
-### User stuff
+################################ REQUIRED ################################
+################################ User stuff
 standard_user: vagrant
 chosen_timezone: "America/New_York"
-# root domain for all services. You should have an A record for *.root_domain. For example, if your domain is test.com you should have an A record for *.test.com pointing to your node.
-# this will allow automatic dns for for things like dokuwiki.test.com and portainer.test.com
-root_domain: test.com
+root_domain: 192.168.254.3.xip.io
+rke_ssh_key_location: /home/vagrant/test_rsa
+
+# the directory on your localhost to store all deployment yaml for apps deployed
+startup_infrastructure_directory: /home/{{ standard_user }}/startup-infrastructure
+
+################################ STORAGE CONFIG
+longhorn_enabled: True
+
+
+################################ OPTIONAL ################################
+################################ RKE (Kubernetes deployment) variables
+kubernetes_network_interface: eth1

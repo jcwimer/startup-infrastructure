@@ -1,0 +1,27 @@
+---
+- name: Create Longhorn config Directory
+  file:
+    path: "{{ startup_infrastructure_directory }}/longhorn"
+    state: directory
+
+- name: Get Longhorn Install
+  get_url:
+    url: https://raw.githubusercontent.com/longhorn/longhorn/{{ longhorn_version }}/deploy/longhorn.yaml
+    dest: "{{ startup_infrastructure_directory }}/longhorn/longhorn.yaml"
+
+- name: Put other Longhorn yaml in place
+  template:
+    src: ../templates/{{ item }}.j2
+    dest: "{{ startup_infrastructure_directory }}/longhorn/{{ item }}"
+  with_items:
+    - longhorn-ingress.yaml
+
+- name: Install Longhorn
+  command: kubectl apply -f {{ startup_infrastructure_directory }}/longhorn/longhorn.yaml
+
+- name: Install Longhorn Extras
+  command: kubectl apply -f {{ startup_infrastructure_directory }}/longhorn/
+
+- name: Set default storageclass
+  command: >
+    kubectl patch storageclass longhorn -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
